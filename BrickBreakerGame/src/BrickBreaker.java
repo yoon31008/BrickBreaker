@@ -1,10 +1,10 @@
 import java.awt.Canvas;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.MediaTracker;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
@@ -39,9 +39,11 @@ class BrickBreaker_frame extends Frame implements KeyListener, Runnable{
 
 	int myx;
 	int myWidth;
+	int mySpeed;
 	
 	int ballX, ballY;
 	int ballXV, ballYV;
+	int ballSpeed;
 
 	boolean ballDeparted;
 	
@@ -69,16 +71,21 @@ class BrickBreaker_frame extends Frame implements KeyListener, Runnable{
 	
 	public void systeminit(){//프로그램 초기화
 
+		cnt = 0;
+		delay = 17;// 17/1000초 = 58 (프레임/초)
+		
 		mainwork = new Thread(this);
 		mainwork.start();
 	}
 	
 	public void initialize() {
-		myx = (getWidth()/2 - 35)*10000;
+		myx = (getWidth()/2 - 35)*100;
 		myWidth = 70;
+		mySpeed = 5;
 		
-		ballXV = 3;
-		ballYV = -3;
+		ballXV = 3 * 100;
+		ballYV = -3 * 100;
+		
 	}
 	
 	@Override
@@ -114,34 +121,34 @@ class BrickBreaker_frame extends Frame implements KeyListener, Runnable{
 		// TODO Auto-generated method stub
 		
 		if(leftPressed == true) {
-			myx -= 5; 
+			myx -= mySpeed * 100; 
 		}
 		
 		if(rightPressed == true) {
-			myx += 5;
+			myx += mySpeed * 100;
 		}
 		
 		if(myx<0) myx=0;
-		if(myx>6400000 - myWidth*10000) myx=6400000 - myWidth*10000;
+		if(myx>64000 - myWidth*100) myx=64000 - myWidth*100;
 	}
 	
 	private void process_BALL() {
 		if(ballDeparted == false) {
-			ballX = myx + (myWidth/2 - 8)*10000;//8은 공의 너비/2
-			ballY = (420 - 15)*10000;
+			ballX = myx + (myWidth/2 - 8)*100;//8은 공의 너비/2
+			ballY = (420 - 15)*100;
 		}else if(ballDeparted == true) {
 			ballX += ballXV;
 			ballY += ballYV;
 			
-			if(ballX+15*10000 >= 640*10000) {// 공이 오른쪽 벽에 맞았을때
+			if(ballX+15*100 >= 640*100) {// 공이 오른쪽 벽에 맞았을때
 				ballXV = -ballXV;
 			}else if(ballX <= 0) {//공이 왼쪽 벽에 맞았을때
 				ballXV = -ballXV;
-			}else if(ballY+15*10000 >= 480*10000) {//공이 아래 벽에 맞았을때
+			}else if(ballY+15*100 >= 480*100) {//공이 아래 벽에 맞았을때
 				ballYV = -ballYV;
-			}else if(ballY-15*10000 <= 0) {//공이 위쪽 벽에 맞았을때
+			}else if(ballY-15*100 <= 0) {//공이 위쪽 벽에 맞았을때
 				ballYV = -ballYV;
-			}else if(ballY + 15*10000 > 420 * 10000 && ballX + 15*10000 > myx && ballX < myx + myWidth) {//공이 바에 맞으면
+			}else if(ballY + 15*100 > 420 * 100 && ballX + 15*100 > myx && ballX < myx + myWidth * 100) {//공이 바에 맞으면
 				ballYV = -ballYV;
 			}
 		}
@@ -207,6 +214,7 @@ class BrickBreaker_frame extends Frame implements KeyListener, Runnable{
 class GameScreen extends Canvas{
 	
 	BrickBreaker_frame main;
+	Brick brick[][] = new Brick[6][6];
 	
 	Image dblbuff;//더블버퍼링용 백버퍼
 	Graphics gc;//더블버퍼링용 그래픽 컨텍스트
@@ -236,21 +244,47 @@ class GameScreen extends Canvas{
 		gc.clearRect(0, 0, main.gScreenWidth, main.gScreenHeight);
 		Draw_MY();
 		Draw_Ball();
+		Draw_Brick();
 	}
 	
+	public void Draw_Brick() {
+		// TODO Auto-generated method stub
+		gc.setColor(Color.yellow);
+		gc.fillRect(0, 30, 40, 30);
+		/*for(int i = 0; i < 4 ; i++) {
+			for(int j = 0 ; j < 4 ; j++) {
+				brick[i][j] = new Brick(i, j);
+				gc.fillRect(brick[i][j].x, brick[i][j].y , brick[i][j].width, brick[i][j].height);
+			}
+		}*/
+	}
+
 	public void Draw_MY() {
 		int myx;
-		myx = main.myx/10000;
+		myx = main.myx/100;
 		gc.setColor(Color.GREEN);
 		gc.fillRect(myx, 420, main.myWidth, 10);
 	}
 	
 	public void Draw_Ball() {
 		int ballX, ballY;
-		ballX = main.ballX/10000;
-		ballY = main.ballY/10000;
+		ballX = main.ballX/100;
+		ballY = main.ballY/100;
 		gc.setColor(Color.GRAY);
 		gc.fillOval(ballX, ballY, 15, 15);
+	}
+}
+
+class Brick{
+	
+	int x;
+	int y;
+	int width = 50;
+	int height = 30;
+	
+	Brick(int x, int y){
+		x = x * width + 2;
+		y = y * height + 2;
 	}
 }
 
